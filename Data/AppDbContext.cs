@@ -14,12 +14,12 @@ namespace FinanceFolio.Data
         {
             
         }
-        public DbSet<Demo> Demos{ get; set; }
+        public DbSet<ExpenseDto> Expenses{ get; set; }
        
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Demo>().ToCollection("Demos");
+            modelBuilder.Entity<ExpenseDto>().ToCollection("Expenses");
         }
     }
 }

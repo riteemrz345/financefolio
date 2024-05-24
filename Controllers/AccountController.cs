@@ -80,6 +80,10 @@ namespace FinanceFolio.Controllers
             if(user != null)
             {
                 await _signInManager.SignInWithClaimsAsync(user, model.RememberMe, claims);
+                return Ok(new
+                {
+                    id=user.Id
+                });
             }
            
             else
