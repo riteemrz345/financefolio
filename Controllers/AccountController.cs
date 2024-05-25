@@ -66,7 +66,7 @@ namespace FinanceFolio.Controllers
         public async Task<IActionResult> UpdateUserInfo(Register model)
         {
 
-            var user=await _userManager.FindByEmailAsync(model.Email);
+            var user = await _userManager.GetUserAsync(User);
             user.UserName = model.UserName;
             user.Email=model.Email;
             user.PhoneNumber=model.PhoneNumber;
