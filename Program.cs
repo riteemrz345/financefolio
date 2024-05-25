@@ -67,6 +67,18 @@ builder.Services.AddSwaggerGen(c =>
         });
 });
 
+// Configure CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins",
+        policy =>
+        {
+            policy.WithOrigins(builder.Configuration.GetValue<string>("Cors", "*").Split(',', System.StringSplitOptions.RemoveEmptyEntries))
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -76,6 +88,8 @@ var app = builder.Build();
 
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowSpecificOrigins");
 
 app.UseAuthentication();
 
