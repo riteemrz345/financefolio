@@ -3,12 +3,14 @@ using FinanceFolio.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver.Core.Authentication;
 using System.Security.Claims;
 
 namespace FinanceFolio.Controllers
 {
     [ApiController]
     [Route("[Controller]")]
+ 
     public class AccountController : ControllerBase
     {
         private readonly UserManager<MongoIdentityUser> _userManager;
@@ -22,7 +24,6 @@ namespace FinanceFolio.Controllers
         }
 
         [HttpPost("Register")]
-        [AllowAnonymous]
 
         public async Task<IActionResult> Register(Register model)
         {
@@ -33,13 +34,6 @@ namespace FinanceFolio.Controllers
 
             if (result.Succeeded)
             {
-                //    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
-                //    // Send an email with this link
-                //    //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                //    //var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
-                //    //await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
-                //    //    "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>");
-                //    await _signInManager.SignInAsync(user, isPersistent: false);
                 return Ok("User Registration Successful");
             }
             else
@@ -50,7 +44,49 @@ namespace FinanceFolio.Controllers
 
         }
 
-        [AllowAnonymous]
+
+        [HttpGet("UserInfo")]
+        [Authorize]
+        public async Task<IActionResult> GetUserInfo()
+        {
+           var user=await _userManager.GetUserAsync(User);
+
+            return Ok(new {
+                Username=user?.UserName,
+                Email=user?.Email,
+                PhoneNumber=user?.PhoneNumber
+            });
+        }
+
+
+
+
+        [HttpPut("updateUserProfile")]
+        [Authorize]
+        public async Task<IActionResult> UpdateUserInfo(Register model)
+        {
+
+            var user=await _userManager.FindByEmailAsync(model.Email);
+            user.UserName = model.UserName;
+            user.Email=model.Email;
+            user.PhoneNumber=model.PhoneNumber;
+            await _userManager.UpdateSecurityStampAsync(user);
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                return Ok("User update Successful");
+            }
+            else
+            {
+
+                return BadRequest(result.Errors.Select(e => e.Description).ToArray());
+            }
+
+        }
+
+
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] Register resetViewModel)
         {
@@ -66,7 +102,6 @@ namespace FinanceFolio.Controllers
         }
 
 
-        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> LogIn(LoginModel model)
         {
@@ -80,10 +115,7 @@ namespace FinanceFolio.Controllers
             if(user != null)
             {
                 await _signInManager.SignInWithClaimsAsync(user, model.RememberMe, claims);
-                return Ok(new
-                {
-                    id=user.Id
-                });
+                return Ok("Login Successful.");
             }
            
             else

@@ -24,27 +24,44 @@ namespace FinanceFolio.Controllers
         [HttpGet("GetDailyExpensesPerMonth")]
         public IActionResult GetAllExpenses(int month)
         {
-            var expensePermonth = _dbcontext.Expenses.Where(e => e.ExpenseDate.Month.Equals(month))
+            try
+            {
+                var expensePermonth = _dbcontext.Expenses.Where(e => e.ExpenseDate.Month.Equals(month))
                                                     .ToList()
                                                     .GroupBy(s => s.ExpenseDate)
                                                     .Select(x => new
-                                                                {
-                                                                    Date=x.Key.ToString("yyyy-MM-dd"),
-                                                                    TotalAmount=x.Sum(y=>y.Amount),
-                                                                }); 
+                                                    {
+                                                        Date = x.Key.ToString("yyyy-MM-dd"),
+                                                        TotalAmount = x.Sum(y => y.Amount),
+                                                    });
+                return Ok(expensePermonth);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("error fetching data.");
+            }
                                                       
       
-            return Ok(expensePermonth);
+           
         }
 
         [HttpPost("InsertExpense")]
         public async Task<IActionResult> InsertExpense(ExpenseDto expense)
         {
+
             expense.ExpenseDate= DateTime.Now;
-           
-            _dbcontext.Add(expense);
-            _dbcontext.SaveChanges();
-            return Ok("");
+            try
+            {
+                _dbcontext.Add(expense);
+                _dbcontext.SaveChanges();
+                return Ok("Expense Inserted.");
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
         }
     }
 }
